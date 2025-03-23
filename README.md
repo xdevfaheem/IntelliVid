@@ -47,8 +47,12 @@ cd IntelliVid
 ```bash
 uv sync
 ```
+3. Setup up your [Gemini](https://aistudio.google.com/app/apikey) API Key
+```
+export GEMINI_API_KEY='your key'
+```
 
-3. Run the application:
+4. Run the application:
 ```bash
 uv python -m streamlit run ui.py
 ```
