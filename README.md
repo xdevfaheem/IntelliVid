@@ -32,7 +32,6 @@ Examples:
 ### Prerequisites
 
 - Python 3.8 or higher
-- FFmpeg installed on your system
 - uv (if not already, you must. it's good)
 
 ### Installation

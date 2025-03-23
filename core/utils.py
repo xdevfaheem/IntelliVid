@@ -1,8 +1,6 @@
-# helpers
+from moviepy import VideoFileClip, concatenate_videoclips
 from pytubefix import YouTube
 from pytubefix.cli import on_progress
-import json
-import subprocess
 
 
 def timestamp_to_seconds(time_str):
@@ -45,55 +43,21 @@ def is_yt_url(url: str) -> str:
 
 
 def concatenate_scenes(video_path, scene_times, output_path):
-    filter_complex_parts = []
-    concat_inputs = []
+    with VideoFileClip(video_path) as video:
+        # Extract each scene as a subclip
+        clips = []
+        for start_sec, end_sec in scene_times:
+            scene_clip = video.subclipped(start_sec, end_sec)
+            clips.append(scene_clip)
 
-    for i, (start_sec, end_sec) in enumerate(scene_times):
-        filter_complex_parts.append(
-            f"[0:v]trim=start={start_sec}:end={end_sec},setpts=PTS-STARTPTS[v{i}];"
-        )
-        filter_complex_parts.append(
-            f"[0:a]atrim=start={start_sec}:end={end_sec},asetpts=PTS-STARTPTS[a{i}];"
-        )
-        concat_inputs.append(f"[v{i}][a{i}]")
+    # Concatenate all clips together
+    final_clip = concatenate_videoclips(clips, method="compose")
 
-    concat_filter = (
-        f"{''.join(concat_inputs)}concat=n={len(scene_times)}:v=1:a=1[outv][outa]"
-    )
-    filter_complex = "".join(filter_complex_parts) + concat_filter
-
-    cmd = [
-        "ffmpeg",
-        "-y",
-        "-i",
-        video_path,
-        "-filter_complex",
-        filter_complex,
-        "-map",
-        "[outv]",
-        "-map",
-        "[outa]",
-        "-c:v",
-        "libx264",
-        "-c:a",
-        "aac",
-        output_path,
-    ]
-
-    print(f"Running command: {' '.join(cmd)}")
-    subprocess.run(cmd, check=True)
+    # Write the result to the output file
+    final_clip.write_videofile(output_path)
+    final_clip.close()
 
 
 def get_video_duration_seconds(video_path):
-    cmd = [
-        "ffprobe",
-        "-v",
-        "quiet",
-        "-print_format",
-        "json",
-        "-show_format",
-        video_path,
-    ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    info = json.loads(result.stdout)
-    return float(info["format"]["duration"])
+    with VideoFileClip(video_path) as vf:
+        return vf.duration
