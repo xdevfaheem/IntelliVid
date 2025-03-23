@@ -4,7 +4,7 @@ from core.main import VideoIntelligence
 
 # Set page configuration
 st.set_page_config(
-    page_title="AI-powered Video Analysis",
+    page_title="IntelliVid",
     page_icon="🎥",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -104,10 +104,11 @@ def display_video(video_path):
 
 # Main app header
 st.markdown(
-    "<div class='main-header'>Video Intelligence App 🎥</div>", unsafe_allow_html=True
+    "<div class='main-header'>AI-powered Video Analysis Application 🎥🧠</div>",
+    unsafe_allow_html=True,
 )
 st.markdown(
-    "<div class='info-text'>Analyze, question, and extract highlights from your videos using AI.</div>",
+    "<div class='info-text'>Analyze, question, and extract highlights/moments from your videos using AI.</div>",
     unsafe_allow_html=True,
 )
 
