@@ -43,19 +43,18 @@ def is_yt_url(url: str) -> str:
 
 
 def concatenate_scenes(video_path, scene_times, output_path):
-    with VideoFileClip(video_path) as video:
-        # Extract each scene as a subclip
-        clips = []
-        for start_sec, end_sec in scene_times:
-            scene_clip = video.subclipped(start_sec, end_sec)
-            clips.append(scene_clip)
+    video = VideoFileClip(video_path)
+    # Extract each scene as a subclip
+    clips = []
+    for start_sec, end_sec in scene_times:
+        scene_clip = video.subclipped(start_sec, end_sec)
+        clips.append(scene_clip)
 
     # Concatenate all clips together
     final_clip = concatenate_videoclips(clips, method="compose")
 
     # Write the result to the output file
     final_clip.write_videofile(output_path)
-    final_clip.close()
 
 
 def get_video_duration_seconds(video_path):
