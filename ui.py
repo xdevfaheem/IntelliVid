@@ -159,7 +159,9 @@ with st.sidebar:
 
 # Main content
 if st.session_state.processing_complete:
-    tabs = st.tabs(["Chat with Video", "Highlight Generator", "Find in Video"])
+    tabs = st.tabs(
+        ["Chat with Video", "Highlight Generator", "Find in Video", "Summmarize"]
+    )
 
     # Video Analysis Tab
     with tabs[0]:
@@ -176,7 +178,7 @@ if st.session_state.processing_complete:
             display_video(st.session_state.video_processor.video_path)
 
             user_question = st.text_input("Ask a question about the video:")
-            if st.button("Get Answer") and user_question:
+            if st.button("Ask") and user_question:
                 with st.spinner("Analyzing video..."):
                     answer = st.session_state.video_processor.chat(user_question)
                     st.session_state.token_count = (
@@ -266,6 +268,25 @@ if st.session_state.processing_complete:
                         st.success(message)
                     else:
                         st.info(message)
+
+    with tabs[3]:
+        st.markdown("<div class='sub-header'>Summarizer</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<div class='info-text'>Generate detailed summary/report of the video</div>",
+            unsafe_allow_html=True,
+        )
+
+        if st.session_state.video_processor:
+            display_video(st.session_state.video_processor.video_path)
+            if st.button("Generate"):
+                with st.spinner("Analyzing video..."):
+                    response = st.session_state.video_processor.generate_summary()
+                    st.session_state.token_count = (
+                        st.session_state.video_processor.token_count
+                    )
+
+                st.markdown(response)
+
 else:
     # Display instructions when no video is processed
     st.markdown(
@@ -283,7 +304,7 @@ else:
     # Display sample use cases
     st.markdown("<div class='sub-header'>Features</div>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
         st.markdown(
@@ -313,6 +334,17 @@ else:
         <div class='highlight-text'>
         <b>Find in Video</b><br>
         Identify/Find specific moments based on your descriptions.
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
+
+    with col4:
+        st.markdown(
+            """
+        <div class='highlight-text'>
+        <b>Summarizer</b><br>
+        Generate detailed, elaborative summary/report of your video
         </div>
         """,
             unsafe_allow_html=True,

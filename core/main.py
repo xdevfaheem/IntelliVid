@@ -180,6 +180,20 @@ class VideoIntelligence:
                 "There is an error with parsing due to incorrect formatting from the model. Try again!"
             )
 
+    def generate_summary(self):
+        SYSTEM_INTRUCTION = "You are an expert video analyst and intelligent assistant. Your job is to carefully and thoroughly analyze the given video and generate a detailed, descriptive and elaborative summary of it. NOTE: respond in `Markdown` format"
+
+        response = self.client.models.generate_content(
+            model=self.model_id,
+            contents=[self.video_part],
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_INTRUCTION,
+                **self.gen_config,
+            ),
+        )
+        self.update_token_count(response.usage_metadata)
+        return response.text
+
     def generate_highlight(self):
         SYSTEM_INSTRUCTION = (
             "You are an expert video analyst. Carefully examine the provided video thoroughly. Identify and provide timestamps of any potential highlights, significant events, key, or noteworthy moments found within the video. Keep it concise",
