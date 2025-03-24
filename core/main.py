@@ -82,29 +82,6 @@ class VideoIntelligence:
                 raise ValueError(
                     "Could not parse the given path into file. Check if it is valid"
                 )
-            self.video_seconds = get_video_duration_seconds(self.video_path)
-
-            self.cache = None
-            # cachecontent not yet supported for 2.0 flash
-            # if self.client.models.count_tokens(
-            #     model=self.model_id,
-            #     contents=[types.Content(role="user", parts=[self.video_part])]
-            # ).total_tokens > 32768: # if the video token exceed 32k (min token for caching), cache it
-
-            #     # video cache
-            #     self.cache = self.client.caches.create(
-            #         model="gemini-1.5-flash-001",
-            #         config=types.CreateCachedContentConfig(
-            #             contents=[
-            #                 types.Content(
-            #                     role="user",
-            #                     parts=[self.video_part],
-            #                 )
-            #             ],
-            #             display_name='video_cache',
-            #             ttl='1800s', #30min
-            #         ),
-            #     )
 
             # gen config
             self.gen_config = dict(
@@ -115,30 +92,17 @@ class VideoIntelligence:
                 max_output_tokens=4096,
             )
 
-            chat_history = (
-                []
-                if self.cache
-                else [
-                    {"role": "user", "parts": [self.video_part]},
-                    {
-                        "role": "model",
-                        "parts": [
-                            {
-                                "text": "i analyzed the given video thoroughly. ask me what you want about the video."
-                            }
-                        ],
-                    },
-                ]
-            )
             self.model_chat = self.client.chats.create(
                 model=self.model_id,
-                history=chat_history,
+                # TODO: add video to chat history while instantiation (couldn't get it working as of now)
                 config=types.GenerateContentConfig(
                     system_instruction="You are an expert video analyzer, and your job is to answer the user's query based on the provided video. Always respond in a natural tone.",
-                    cached_content=self.cache.name if self.cache else None,
                     **self.gen_config,
                 ),
             )
+
+            # send the video once, to be at the top of the chat history to be questioned on (kinda works atleast for now)
+            self.model_chat.send_message(self.video_part)
             self.token_count["input"] = self.token_count["total"] = (
                 self.client.models.count_tokens(
                     model=self.model_id,
@@ -146,9 +110,11 @@ class VideoIntelligence:
                 ).total_tokens
             )  # need comprehensive, as is
 
+            self.video_seconds = get_video_duration_seconds(self.video_path)
+
         except Exception as e:
+            traceback.print_exc()
             raise RuntimeError(f"Failed to process video content: {str(e)}")
-            print(traceback.format_exc())
 
     def chat(self, message: str):
         try:
