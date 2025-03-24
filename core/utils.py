@@ -19,8 +19,8 @@ def download_yt_video(url: str, directory) -> str:
         ys = yt.streams.get_highest_resolution()
         file_path = ys.download(output_path=directory)
         return file_path
-    except Exception as e:
-        raise RuntimeError(f"Failed to download the video using pytube: {str(e)}")
+    except Exception:
+        return download_yt_video(url, directory)
 
 
 def is_yt_url(url: str) -> str:
