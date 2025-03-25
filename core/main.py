@@ -181,7 +181,7 @@ class VideoIntelligence:
             )
 
     def generate_summary(self):
-        SYSTEM_INTRUCTION = "You are an expert video analyst and intelligent assistant. Your job is to carefully and thoroughly analyze the given video and generate a detailed, descriptive and elaborative summary of it. NOTE: respond in `Markdown` format"
+        SYSTEM_INTRUCTION = "You are an expert video analyst and an intelligent assistant. Your job is to carefully and thoroughly analyze the given video and generate a detailed, descriptive and elaborative report of it, with clear sections. Make sure to respond only in `Markdown` format"
 
         response = self.client.models.generate_content(
             model=self.model_id,
