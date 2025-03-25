@@ -1,3 +1,4 @@
+import json
 import mimetypes
 import os
 import shutil
@@ -143,7 +144,8 @@ class VideoIntelligence:
             self.update_token_count(response.usage_metadata)
 
             segment_timestamps = []
-            if timestamps := response.parsed.get("timestamp", None):
+            timestamps = response.parsed.get("timestamp", None)
+            if timestamps:
                 print("Timestamps extracted! Validating it...", flush=True)
                 timestamps = (
                     [timestamps] if not isinstance(timestamps, list) else timestamps
@@ -188,11 +190,22 @@ class VideoIntelligence:
             contents=[self.video_part],
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_INTRUCTION,
+                response_mime_type="application/json",
+                response_schema={
+                    "type": "object",
+                    "properties": {
+                        "summary": {
+                            "type": "string",
+                            "description": "Detailed report of the video",
+                        }
+                    },
+                    "required": ["summary"],
+                },
                 **self.gen_config,
             ),
         )
         self.update_token_count(response.usage_metadata)
-        return response.text
+        return json.loads(response.text)["summary"].strip()
 
     def generate_highlight(self):
         SYSTEM_INSTRUCTION = (
