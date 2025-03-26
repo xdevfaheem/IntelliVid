@@ -67,6 +67,18 @@ st.markdown(
 )
 
 # Initialize session state
+if "messages" not in st.session_state:
+    st.session_state["messages"] = [
+        {
+            "role": "assistant",
+            "content": "I have watched the video. Ask me! what you want to know about it?",
+        }
+    ]
+
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "assistant", "content": "Hi there! How can I help you?"}
+    ]
 if "video_processor" not in st.session_state:
     st.session_state.video_processor = None
 if "video_path" not in st.session_state:
@@ -177,18 +189,24 @@ if st.session_state.processing_complete:
         if st.session_state.video_processor:
             display_video(st.session_state.video_processor.video_path)
 
-            user_question = st.text_input("Ask a question about the video:")
-            if st.button("Ask") and user_question:
+            for msg in st.session_state.messages:
+                st.chat_message(msg["role"]).write(msg["content"])
+
+            if user_query := st.chat_input("Ask somehing about the video"):
+                st.session_state.messages.append(
+                    {"role": "user", "content": user_query}
+                )
+                st.chat_message("user").write(user_query)
                 with st.spinner("Analyzing video..."):
-                    answer = st.session_state.video_processor.chat(user_question)
+                    answer = st.session_state.video_processor.chat(user_query)
+
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": answer}
+                    )
+                    st.chat_message("assistant").write(answer)
                     st.session_state.token_count = (
                         st.session_state.video_processor.token_count
                     )
-
-                st.markdown(
-                    f"<div class='highlight-text'>{answer}</div>",
-                    unsafe_allow_html=True,
-                )
 
     # Highlight Generation Tab
     with tabs[1]:
@@ -311,7 +329,7 @@ else:
             """
         <div class='highlight-text'>
         <b>Video Question Answering</b><br>
-        Ask natural language questions about the video content and get detailed answers.
+        Ask any questions about the video content and get answers.
         </div>
         """,
             unsafe_allow_html=True,
@@ -344,7 +362,7 @@ else:
             """
         <div class='highlight-text'>
         <b>Summarizer</b><br>
-        Generate detailed, elaborative summary/report of your video
+        Generate detailed summary/report of your video
         </div>
         """,
             unsafe_allow_html=True,
